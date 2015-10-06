@@ -1,7 +1,7 @@
 {
   "name": "promise-resolver",
   "version": "0.0.0",
-  "description": "My ultimate module",
+  "description": "Turn a promises resolver methods into a node style callback",
   "license": "MIT",
   "repository": "jamestalmage/promise-resolver",
   "author": {
@@ -19,7 +19,14 @@
     "index.js"
   ],
   "keywords": [
-    ""
+    "promise",
+    "promises",
+    "promisification",
+    "promisify",
+    "callback",
+    "callbacks",
+    "nodeback",
+    "node"
   ],
   "dependencies": {},
   "devDependencies": {

@@ -1,7 +1,6 @@
 # promise-resolver [![Build Status](https://travis-ci.org/jamestalmage/promise-resolver.svg?branch=master)](https://travis-ci.org/jamestalmage/promise-resolver)
 
-> My ultimate module
-
+> Turn a promises resolver methods into a node style callback
 
 ## Install
 
@@ -9,36 +8,20 @@
 $ npm install --save promise-resolver
 ```
 
-
 ## Usage
 
 ```js
 var promiseResolver = require('promise-resolver');
 
-promiseResolver('unicorns');
-//=> 'unicorns & rainbows'
+new Promise(function (resolve, reject) {
+  var cb = promiseResolver(resolve, reject);
+  
+  cb(new Error('...')); // rejects promise
+  cb(null, 'result'); // resolves promise
+});
 ```
 
-
-## API
-
-### promiseResolver(input, [options])
-
-#### input
-
-Type: `string`
-
-Lorem ipsum.
-
-#### options
-
-##### foo
-
-Type: `boolean`  
-Default: `false`
-
-Lorem ipsum.
-
+**Note:** You may not need this. Make sure you understand your promise libraries "promisify" methods first. 
 
 ## License
 
