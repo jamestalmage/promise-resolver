@@ -14,14 +14,26 @@ $ npm install --save promise-resolver
 var promiseResolver = require('promise-resolver');
 
 new Promise(function (resolve, reject) {
-  var cb = promiseResolver(resolve, reject);
+  var cb = promiseResolver(resolve, reject, passThroughCallback);
   
-  cb(new Error('...')); // rejects promise
-  cb(null, 'result'); // resolves promise
+  cb(new Error('...')); // rejects promise and calls passThroughCallback with same args
+  cb(null, 'result'); // resolves promise and calls passThroughCallback with same args
 });
 ```
+## API
 
-**Note:** You may not need this. Make sure you understand your promise libraries "promisify" methods first. 
+### promiseResolver(resolve, reject, passThrough) 
+
+All arguments should be functions, null, or undefined.
+
+* `resolve` - promise resolve function
+* `reject` - promise reject function
+* `passThrough` - a "pass through" node style (error first) callback.
+
+Returns a node style callback: `cb(err, result...)`
+
+Calling the callback will resolve or reject the promise (depending on the `err` argument).
+If it exists, the `passThrough` callback will be called with the same arguments. 
 
 ## License
 

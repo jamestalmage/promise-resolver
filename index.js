@@ -1,10 +1,13 @@
 'use strict';
-module.exports = function (resolve, reject) {
+module.exports = function (resolve, reject, cb) {
 	return function (err, result) {
-		if (err) {
+		if (err && reject) {
 			reject(err);
-		} else {
+		} else if (resolve) {
 			resolve(result);
+		}
+		if (cb) {
+			cb.apply(null, arguments);
 		}
 	};
 };
