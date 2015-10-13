@@ -1,6 +1,6 @@
 {
   "name": "promise-resolver",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Turn a promises resolver methods into a node style callback",
   "license": "MIT",
   "repository": "jamestalmage/promise-resolver",
