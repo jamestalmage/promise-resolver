@@ -17,9 +17,6 @@ function makeResolver(resolve, reject, cb) {
 
 function defer(cb, Promise) {
 	Promise = Promise || global.Promise;
-	if (typeof Promise !== 'function') {
-		throw new Error('Promise || global.Promise is not a function');
-	}
 	var obj = {};
 	obj.promise = new Promise(function (resolve, reject) {
 		obj.resolve = resolve;
