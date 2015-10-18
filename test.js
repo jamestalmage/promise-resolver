@@ -77,11 +77,19 @@ it('calls resolve and callback with result', function () {
 	assertSpy.calledWith(cb, null, 'goodbye!');
 });
 
+it('will only call cb once', function () {
+	resolver = promiseResolver(resolve, reject, cb);
+	resolver(null, 'goodbye!');
+	resolver(null, 'hello!');
+	assertSpy.calledOnce(cb);
+	assertSpy.calledWith(cb, null, 'goodbye!');
+});
+
 it('defer() creates a defer object', function () {
 	var defer = promiseResolver.defer(cb, PromiseStub);
 	resolver = defer.cb;
-	assert.strictEqual(defer.resolve, resolve);
-	assert.strictEqual(defer.reject, reject);
+	assert.strictEqual(typeof defer.resolve, 'function');
+	assert.strictEqual(typeof defer.reject, 'function');
 	assert.strictEqual(typeof defer.promise.then, 'function');
 	assert.strictEqual(typeof defer.promise.catch, 'function');
 
@@ -91,4 +99,33 @@ it('defer() creates a defer object', function () {
 	assertSpy.calledWith(resolve, 'goodbye!');
 	assertSpy.calledOnce(cb);
 	assertSpy.calledWith(cb, null, 'goodbye!');
+});
+
+it('defer() suppresses unhandledRejection if cb is provided', function (done) {
+	var spy = sinon.spy();
+	process.once('unhandledRejection', spy);
+	promiseResolver.defer(cb).cb(new Error('hello'));
+	setTimeout(function () {
+		assertSpy.notCalled(spy);
+		done();
+	}, 30);
+});
+
+it('defer() does NOT suppress unhandledRejection if cb is NOT provided', function () {
+	var spy = sinon.spy();
+	process.once('unhandledRejection', spy);
+	promiseResolver.defer(cb).cb(new Error('hello'));
+	setTimeout(function () {
+		assertSpy.called(spy);
+	}, 30);
+});
+
+it('defer().reject will call callback with error as first arg', function () {
+	promiseResolver.defer(cb).reject(new Error('defer.reject'));
+	assertSpy.calledWith(cb, sinon.match.has('message', 'defer.reject'));
+});
+
+it('defer().resolve will result to callback as second arg', function () {
+	promiseResolver.defer(cb).resolve('hello');
+	assertSpy.calledWith(cb, null, 'hello');
 });
