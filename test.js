@@ -2,7 +2,10 @@
 var sinon = require('sinon');
 var assertSpy = sinon.assert;
 var assert = require('assert');
+var proxyquire = require('proxyquire');
+
 var promiseResolver = require('./');
+var noPromiseResolver = proxyquire('./', {'native-or-bluebird/promise': false});
 
 var resolve;
 var reject;
@@ -128,4 +131,20 @@ it('defer().reject will call callback with error as first arg', function () {
 it('defer().resolve will result to callback as second arg', function () {
 	promiseResolver.defer(cb).resolve('hello');
 	assertSpy.calledWith(cb, null, 'hello');
+});
+
+it('defer().resolve works using a callback even if there is no installed promise implementation', function () {
+	noPromiseResolver.defer(cb).resolve('hello');
+	assertSpy.calledWith(cb, null, 'hello');
+});
+
+it('defer().reject works using a callback even if there is no installed promise implementation', function () {
+	noPromiseResolver.defer(cb).reject(new Error('uh oh'));
+	assertSpy.calledWith(cb, sinon.match.has('message', 'uh oh'));
+});
+
+it('defer() will throw without an installed promise implementation or supplied callback', function () {
+	assert.throws(function () {
+		noPromiseResolver.defer();
+	}, /No Promise Implementation/);
 });
