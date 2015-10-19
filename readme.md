@@ -70,11 +70,9 @@ function doStuff (cb) {
 
 #### Missing Promise Implementation
 
-Used correctly, `promise-resolver` allows you to create API's that provide the convenience of Promises,
- without demanding a bulky Promise polyfill on systems that do not already have an implementation. Of course, users
- will be forced to use callbacks if no Promise implementation exists.
-
-`promise-resolver` looks first for `bluebird` and then a native `Promise` implementation.
+`promise-resolver` allows you to create API's that provide the convenience of Promises,
+ without demanding a bulky Promise polyfill on systems that do not already have an implementation.
+ It looks first for `bluebird` and then a native `Promise` implementation.
 
 If the user does not supply a callback *and* no promise implementation is found, an
  error will be thrown explaining how to resolve the problem:
@@ -86,7 +84,7 @@ If the user does not supply a callback *and* no promise implementation is found,
 If it does *not* find a promise implementation, but a callback *is* found then it will still return a `deferred`, but 
  `deferred.promise` will be `undefined`.
  
-`promiseResolver.defer(cb, Promise)` does allow you to specify a Promise implementation as the second argument. 
+Finally, `promiseResolver.defer(cb, Promise)` does allow you to specify an alternate Promise implementation as the second argument. 
 
 
 ## API
