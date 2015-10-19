@@ -74,7 +74,7 @@ function doStuff (cb) {
  without demanding a bulky Promise polyfill on systems that do not already have an implementation.
  It looks first for `bluebird` and then a native `Promise` implementation.
 
-If the user does not supply a callback *and* no promise implementation is found, an
+If the user does *not* supply a callback *and* no promise implementation is found, an
  error will be thrown explaining how to resolve the problem:
 
 ```
@@ -115,6 +115,7 @@ return deferred.promise;
   the promise will be suppressed. This avoids potentially confusing console warnings if users are handling errors
   via a callback and ignoring the returned promise. 
 * `deferred.resolve` and `deferred.reject` are also available, and behave as expected.
+* `deferred.promise` will be `undefined` if no Promise implementation is found (in that case `passThroughCallback` is required).
 
 
 ### promiseResolver(resolve, reject, passThrough) 
