@@ -23,30 +23,26 @@ function makeResolver(resolve, reject, cb) {
 
 function defer(cb, Promise) {
 	Promise = Promise || bluebird;
-	var resolve = null;
-	var reject = null;
+	var callback;
 	var promise;
 	if (Promise) {
-		promise = new Promise(function (_resolve, _reject) {
-			resolve = _resolve;
-			reject = _reject;
+		promise = new Promise(function (resolve, reject) {
+			callback = makeResolver(resolve, reject, cb);
 		});
-	} else if (!cb) {
-		noPromise();
+		if (cb) {
+			// Suppress 'unhandledRejection' events - assume the callback handles them.
+			promise.catch(function () {});
+		}
+	} else if (cb) {
+		callback = cb;
+	} else {
+		throw new Error('No Promise Implementation: Install bluebird, upgrade to Node >= 0.11.13, or use a callback');
 	}
-	var callback = makeResolver(resolve, reject, cb);
-	if (cb && promise) {
-		// Suppress 'unhandledRejection' events - assume the callback handles them.
-		promise.catch(function () {});
-	}
+
 	return {
 		cb: callback,
 		resolve: callback.bind(null, null),
-		reject: callback.bind(null),
+		reject: callback,
 		promise: promise
 	};
-}
-
-function noPromise() {
-	throw new Error('No Promise Implementation: Install bluebird, upgrade to Node >= 0.11.13, or use a callback');
 }
