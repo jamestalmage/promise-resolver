@@ -1,6 +1,6 @@
 {
   "name": "promise-resolver",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Provide flexible methods that accept callbacks and return promises without requiring a Promise implementation exist",
   "license": "MIT",
   "repository": "jamestalmage/promise-resolver",
