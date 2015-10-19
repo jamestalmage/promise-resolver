@@ -46,11 +46,11 @@ sayMyName('Susan').then(function (message) {
 });
 ```
 
-If you do not provide a callback, then you should `catch` errors on the promise. Otherwise
- [`unhandledRejection`](https://nodejs.org/api/process.html#process_event_unhandledrejection) events 
- will be emitted. You can both provide a callback, and use the promise. If a callback is provided, 
+If you do not provide a callback, then you should `catch` errors on the promise. Most promise implementations emit
+ [`unhandledRejection`](https://nodejs.org/api/process.html#process_event_unhandledrejection) events.
+ If a callback is provided, 
  [`unhandledRejection`](https://nodejs.org/api/process.html#process_event_unhandledrejection) 
- events will be suppressed (it is assumed the callback handles any errors).
+ events are be suppressed (it is assumed the callback handles any errors).
  
  
 #### Safe Callbacks
