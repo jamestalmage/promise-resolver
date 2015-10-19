@@ -31,7 +31,7 @@ function defer(cb, Promise) {
 	} else if (cb) {
 		callback = safecb(cb);
 	} else {
-		throw new Error('No Promise Implementation: Install bluebird, upgrade to Node >= 0.11.13, or use a callback');
+		throw new Error('No Promise Implementation: You must use a callback function, upgrade to Node >= 0.11.13, or install bluebird');
 	}
 
 	return {
