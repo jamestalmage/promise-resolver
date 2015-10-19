@@ -1,6 +1,6 @@
 # promise-resolver [![Build Status](https://travis-ci.org/jamestalmage/promise-resolver.svg?branch=master)](https://travis-ci.org/jamestalmage/promise-resolver)
 
-> Turn a promises resolver methods into a node style callback
+> Provide flexible methods that accept callback and promises without requiring a Promise implementation exist
 
 
 ## Install
@@ -15,45 +15,103 @@ $ npm install --save promise-resolver
 ```js
 var promiseResolver = require('promise-resolver');
 
-// creates a standard "defer" object, with added "cb" property.
-var defer = promiseResolver.defer(passThroughCallback);   
-
-// rejects promise and calls passThroughCallback with same args
-defer.cb(new Error('...')); 
-
-// resolves promise and calls passThroughCallback with same args
-defer.cb(null, 'result'); 
-
-return defer.promise;
+function sayMyName(name, cb) {
+  var deferred = promiseResolver.defer(cb);
+  
+  // this resolves the promise and calls the callback (asynchronously).
+  deferred.cb(null, 'My name is ' + name + '!');
+  
+  return deferred.promise;
 ```
 
-* `defer.cb` will resolve/reject the promise and call `passThroughCallback`
+`sayMyName` can now be used in one of two ways:
+
+#### Provide a callback
+
+```js
+sayMyName('James', function (error, message) {
+  console.log(message);
+  // => 'My name is James!'
+});
+```
+
+#### Use the returned promise
+
+```js
+sayMyName('Susan').then(function (message) {
+  console.log(message);
+  // => 'My name is Susan!'
+});
+```
+
+If you do not provide a callback, then you should `catch` errors on the promise. Otherwise
+ [unhandledRejection events](https://nodejs.org/api/process.html#process_event_unhandledrejection) 
+ will be emitted. You can both provide a callback, and use the promise. If a callback is provided, 
+ [unhandledRejection events](https://nodejs.org/api/process.html#process_event_unhandledrejection) 
+ will be suppressed.
+ 
+### Safe Callbacks
+
+`promise-resolver` protects against callback misuse in the following ways:
+
+```js
+function doStuff (cb) {
+  var deferred = promiseResolver(cb);
+  // prevent these typical problems:
+  deferred.cb() // synchronous invocation
+  deferred.cb() // multiple invocations
+  deferred.cb() // undefined is not a function (deferred.cb is always defined, even if cb is not)
+}
+```
+
+### Missing Promise Implementation
+
+Used correctly, `promise-resolver` allows you to create API's that provide the convenience of Promises,
+ without demanding a bulky Promise polyfill on systems that do not already have an implementation. Of course, users
+ will be forced to use callbacks if no Promise implementation exists.
+
+`promise-resolver` looks first for `bluebird` and then a native `Promise` implementation.
+
+If the user does not supply a callback *and* no promise implementation is found, an
+ error will be thrown explaining how to resolve the problem:
+
+```
+  No Promise Implementation: You must use a callback function, upgrade to Node >= 0.11.13, or install bluebird
+```
+
+If it does *not* find a promise implementation, but a callback *is* found then it will still return a `deferred`, but 
+ `deferred.promise` will be `undefined`.
+ 
+`promiseResolver.defer(cb, Promise)` does allow you to specify a Promise implementation as the second argument. 
+
+## API
+ 
+### promiseResolver.defer(passThrough, Promise)
+
+* `passThrough` - a "pass through" node style callback as described above
+* `Promise` - an alternate Promise constructor (will use `bluebird` or native `Promise` implementation by default).
+
+The return value is a standard `defer` object with an additional `cb` property
+that is a node style resolver callback.
+ 
+```js
+var deferred = promiseResolver(passThroughCallback);
+
+// rejects promise and calls passThroughCallback with same args
+deferred.cb(new Error('...')); 
+
+// resolves promise and calls passThroughCallback with same args
+deferred. cb(null, 'result'); 
+
+return deferred.promise;
+```
+
+* `deferred.cb` will resolve/reject the promise and call `passThroughCallback`
 * Ensures that `passThroughCallback` is only called once.
 * If `passThroughCallback` is provided, it is assumed to handle any errors, and so `unhandledRejection` errors on 
   the promise will be suppressed. This avoids potentially confusing console warnings if users are handling errors
   via a callback and ignoring the returned promise. 
-* `defer.resolve` and `defer.reject` behave as expected.
-
-
-## Alternate Usage
-
-```js                       
-var promiseResolver = require('promise-resolver');
-
-return new Promise(function (resolve, reject) {
-  var cb = promiseResolver(resolve, reject, passThroughCallback);
-  
-  cb(new Error('...'));
-  
-  cb(null, 'result');
-});
-```
-
-This behaves similar to the `defer` method, with the only exception being that `unhandledRejection` errors are *not* 
-automatically suppressed when `passThroughCallback` is supplied.
-
-
-## API
+* `deferred.resolve` and `deferred.reject` are also available, and behave as expected.
 
 ### promiseResolver(resolve, reject, passThrough) 
 
@@ -67,27 +125,21 @@ Returns a node style callback: `cb(err, result...)`
 
 Calling the callback will resolve or reject the promise (depending on the `err` argument).
 If it exists, the `passThrough` callback will be called with the same arguments.
- 
- 
-### promiseResolver.defer(passThrough, Promise)
 
-* `passThrough` - a "pass through" node style callback as described above
-* `Promise` - an alternate Promise constructor (will use `global.Promise` or `bluebird` by default).
-
-The return value is a standard `defer` object with an additional `cb` property
-that is a node style resolver callback.
- 
 ```js
-var defer = promiseResolver(passThroughCallback);
-var cb = defer.cb;
-  
-cb(new Error('...')); // rejects promise and calls passThroughCallback with same args
-cb(null, 'result'); // resolves promise and calls passThroughCallback with same args
+var promiseResolver = require('promise-resolver');
 
-return defer.promise;
+return new Promise(function (resolve, reject) {
+  var cb = promiseResolver(resolve, reject, passThroughCallback);
+  
+  cb(new Error('...'));
+  
+  cb(null, 'result');
+});
 ```
 
-`defer.resolve`, and `defer.reject` are also available on the defer object.
+This behaves similar to the `defer` method, with the only exception being that `unhandledRejection` errors are *not* 
+automatically suppressed when `passThroughCallback` is supplied. It also requires you find and invoke the Promise implementation.
 
 
 ## License
