@@ -1,6 +1,6 @@
 # promise-resolver [![Build Status](https://travis-ci.org/jamestalmage/promise-resolver.svg?branch=master)](https://travis-ci.org/jamestalmage/promise-resolver)
 
-> Provide flexible methods that accept callback and promises without requiring a Promise implementation exist
+> Provide flexible methods that accept callbacks and return promises without requiring a Promise implementation exist
 
 
 ## Install
@@ -26,7 +26,8 @@ function sayMyName(name, cb) {
 
 `sayMyName` can now be used in one of two ways:
 
-#### Provide a callback
+
+##### Provide a callback
 
 ```js
 sayMyName('James', function (error, message) {
@@ -35,7 +36,8 @@ sayMyName('James', function (error, message) {
 });
 ```
 
-#### Use the returned promise
+
+##### Use the returned promise
 
 ```js
 sayMyName('Susan').then(function (message) {
@@ -45,12 +47,13 @@ sayMyName('Susan').then(function (message) {
 ```
 
 If you do not provide a callback, then you should `catch` errors on the promise. Otherwise
- [unhandledRejection events](https://nodejs.org/api/process.html#process_event_unhandledrejection) 
+ [`unhandledRejection`](https://nodejs.org/api/process.html#process_event_unhandledrejection) events 
  will be emitted. You can both provide a callback, and use the promise. If a callback is provided, 
- [unhandledRejection events](https://nodejs.org/api/process.html#process_event_unhandledrejection) 
- will be suppressed.
+ [`unhandledRejection`](https://nodejs.org/api/process.html#process_event_unhandledrejection) 
+ events will be suppressed (it is assumed the callback handles any errors).
  
-### Safe Callbacks
+ 
+#### Safe Callbacks
 
 `promise-resolver` protects against callback misuse in the following ways:
 
@@ -64,7 +67,8 @@ function doStuff (cb) {
 }
 ```
 
-### Missing Promise Implementation
+
+#### Missing Promise Implementation
 
 Used correctly, `promise-resolver` allows you to create API's that provide the convenience of Promises,
  without demanding a bulky Promise polyfill on systems that do not already have an implementation. Of course, users
@@ -83,6 +87,7 @@ If it does *not* find a promise implementation, but a callback *is* found then i
  `deferred.promise` will be `undefined`.
  
 `promiseResolver.defer(cb, Promise)` does allow you to specify a Promise implementation as the second argument. 
+
 
 ## API
  
@@ -112,6 +117,7 @@ return deferred.promise;
   the promise will be suppressed. This avoids potentially confusing console warnings if users are handling errors
   via a callback and ignoring the returned promise. 
 * `deferred.resolve` and `deferred.reject` are also available, and behave as expected.
+
 
 ### promiseResolver(resolve, reject, passThrough) 
 
