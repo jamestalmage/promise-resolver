@@ -2,22 +2,17 @@
 module.exports = makeResolver;
 module.exports.defer = defer;
 var bluebird = require('native-or-bluebird/promise');
+var safecb = require('safecb');
 
 function makeResolver(resolve, reject, cb) {
-	var called = false;
+	cb = safecb(cb);
 	return function (err, result) {
-		if (called) {
-			return;
-		}
-		called = true;
 		if (err && reject) {
 			reject(err);
 		} else if (resolve) {
 			resolve(result);
 		}
-		if (cb) {
-			cb.apply(null, arguments);
-		}
+		cb.apply(null, arguments);
 	};
 }
 
@@ -34,7 +29,7 @@ function defer(cb, Promise) {
 			promise.catch(function () {});
 		}
 	} else if (cb) {
-		callback = cb;
+		callback = safecb(cb);
 	} else {
 		throw new Error('No Promise Implementation: Install bluebird, upgrade to Node >= 0.11.13, or use a callback');
 	}

@@ -1,4 +1,5 @@
 'use strict';
+require('co-mocha');
 var sinon = require('sinon');
 var assertSpy = sinon.assert;
 var assert = require('assert');
@@ -13,7 +14,11 @@ var cb;
 var resolver;
 var PromiseStub;
 
-beforeEach(function () {
+function timeout(delay) {
+	return new Promise(resolve => setTimeout(resolve, delay || 0));
+}
+
+beforeEach(() => {
 	resolve = sinon.spy();
 	reject = sinon.spy();
 	cb = sinon.spy();
@@ -44,25 +49,28 @@ it('resolves with second argument', function () {
 	assertSpy.calledWith(resolve, 'howdy!');
 });
 
-it('calls callback with error', function () {
+it('calls callback with error', function *() {
 	resolver = promiseResolver(null, null, cb);
 	var err = new Error('err');
 	resolver(err, 'hello!');
+	yield timeout();
 	assertSpy.calledOnce(cb);
 	assertSpy.calledWith(cb, err, 'hello!');
 });
 
-it('calls callback with result', function () {
+it('calls callback with result', function *() {
 	resolver = promiseResolver(null, null, cb);
 	resolver(null, 'hello!');
+	yield timeout();
 	assertSpy.calledOnce(cb);
 	assertSpy.calledWith(cb, null, 'hello!');
 });
 
-it('calls reject and callback with error', function () {
+it('calls reject and callback with error', function *() {
 	resolver = promiseResolver(resolve, reject, cb);
 	var err = new Error('err');
 	resolver(err, 'hello!');
+	yield timeout();
 	assertSpy.notCalled(resolve);
 	assertSpy.calledOnce(reject);
 	assertSpy.calledWith(reject, err);
@@ -70,9 +78,10 @@ it('calls reject and callback with error', function () {
 	assertSpy.calledWith(cb, err, 'hello!');
 });
 
-it('calls resolve and callback with result', function () {
+it('calls resolve and callback with result', function *() {
 	resolver = promiseResolver(resolve, reject, cb);
 	resolver(null, 'goodbye!');
+	yield timeout();
 	assertSpy.notCalled(reject);
 	assertSpy.calledOnce(resolve);
 	assertSpy.calledWith(resolve, 'goodbye!');
@@ -80,15 +89,18 @@ it('calls resolve and callback with result', function () {
 	assertSpy.calledWith(cb, null, 'goodbye!');
 });
 
-it('will only call cb once', function () {
+it('will only call cb once', function *() {
 	resolver = promiseResolver(resolve, reject, cb);
 	resolver(null, 'goodbye!');
+	yield timeout();
+	assertSpy.calledOnce(cb);
 	resolver(null, 'hello!');
+	yield timeout();
 	assertSpy.calledOnce(cb);
 	assertSpy.calledWith(cb, null, 'goodbye!');
 });
 
-it('defer() creates a defer object', function () {
+it('defer() creates a defer object', function *() {
 	var defer = promiseResolver.defer(cb, PromiseStub);
 	resolver = defer.cb;
 	assert.strictEqual(typeof defer.resolve, 'function');
@@ -97,6 +109,8 @@ it('defer() creates a defer object', function () {
 	assert.strictEqual(typeof defer.promise.catch, 'function');
 
 	resolver(null, 'goodbye!');
+	yield timeout();
+
 	assertSpy.notCalled(reject);
 	assertSpy.calledOnce(resolve);
 	assertSpy.calledWith(resolve, 'goodbye!');
@@ -104,42 +118,43 @@ it('defer() creates a defer object', function () {
 	assertSpy.calledWith(cb, null, 'goodbye!');
 });
 
-it('defer() suppresses unhandledRejection if cb is provided', function (done) {
+it('defer() suppresses unhandledRejection if cb is provided', function *() {
 	var spy = sinon.spy();
 	process.once('unhandledRejection', spy);
 	promiseResolver.defer(cb).cb(new Error('hello'));
-	setTimeout(function () {
-		assertSpy.notCalled(spy);
-		done();
-	}, 30);
+	yield timeout();
+	assertSpy.notCalled(spy);
 });
 
-it('defer() does NOT suppress unhandledRejection if cb is NOT provided', function () {
+it('defer() does NOT suppress unhandledRejection if cb is NOT provided', function *() {
 	var spy = sinon.spy();
 	process.once('unhandledRejection', spy);
-	promiseResolver.defer(cb).cb(new Error('hello'));
-	setTimeout(function () {
-		assertSpy.called(spy);
-	}, 30);
+	promiseResolver.defer().cb(new Error('hello'));
+	yield timeout();
+	assertSpy.called(spy);
 });
 
-it('defer().reject will call callback with error as first arg', function () {
+it('defer().reject will call callback with error as first arg', function *() {
 	promiseResolver.defer(cb).reject(new Error('defer.reject'));
+	yield timeout();
 	assertSpy.calledWith(cb, sinon.match.has('message', 'defer.reject'));
 });
 
-it('defer().resolve will result to callback as second arg', function () {
+it('defer().resolve will result to callback as second arg', function *() {
 	promiseResolver.defer(cb).resolve('hello');
+	yield timeout();
 	assertSpy.calledWith(cb, null, 'hello');
 });
 
-it('defer().resolve works using a callback even if there is no installed promise implementation', function () {
+it('defer().resolve works using a callback even if there is no installed promise implementation', function *() {
 	noPromiseResolver.defer(cb).resolve('hello');
+	yield timeout();
 	assertSpy.calledWith(cb, null, 'hello');
 });
 
-it('defer().reject works using a callback even if there is no installed promise implementation', function () {
+it('defer().reject works using a callback even if there is no installed promise implementation', function *() {
 	noPromiseResolver.defer(cb).reject(new Error('uh oh'));
+	yield timeout();
 	assertSpy.calledWith(cb, sinon.match.has('message', 'uh oh'));
 });
 
