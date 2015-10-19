@@ -15,7 +15,7 @@ var resolver;
 var PromiseStub;
 
 function timeout(delay) {
-	return new Promise(resolve => setTimeout(resolve, delay || 0));
+	return new Promise(resolve => setTimeout(resolve, typeof delay === 'number' ? delay : 30));
 }
 
 beforeEach(() => {
