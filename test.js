@@ -158,6 +158,13 @@ it('defer().reject works using a callback even if there is no installed promise 
 	assertSpy.calledWith(cb, sinon.match.has('message', 'uh oh'));
 });
 
+it('defer().reject(null) rejects a promise, even though error is falsie', function *() {
+	promiseResolver.defer(cb, PromiseStub).reject(null);
+	yield timeout();
+	assertSpy.calledWith(cb, sinon.match.has('message', 'reject called with falsie reason'));
+	assertSpy.calledWith(reject, sinon.match.has('message', 'reject called with falsie reason'));
+});
+
 it('defer() will throw without an installed promise implementation or supplied callback', function () {
 	assert.throws(function () {
 		noPromiseResolver.defer();

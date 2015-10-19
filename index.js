@@ -34,10 +34,32 @@ function defer(cb, Promise) {
 		throw new Error('No Promise Implementation: You must use a callback function, upgrade to Node >= 0.11.13, or install bluebird');
 	}
 
-	return {
-		cb: callback,
-		resolve: callback.bind(null, null),
-		reject: callback,
-		promise: promise
-	};
+	return new Deferred(callback, promise);
 }
+
+function Deferred(cb, promise) {
+	this.cb = cb;
+	this.promise = promise;
+}
+
+Object.defineProperties(Deferred.prototype, {
+	resolve: {
+		enumerable: true,
+		get: function () {
+			return this.cb.bind(null, null);
+		}
+	},
+	reject: {
+		enumerable: true,
+		get: function () {
+			var cb = this.cb;
+			return function (reason) {
+				if (reason) {
+					cb.apply(null, arguments);
+				} else {
+					cb(new Error('reject called with falsie reason'));
+				}
+			};
+		}
+	}
+});
